@@ -1,6 +1,6 @@
 # k8s install
 
-## 사전 준비
+## 1. 사전 준비
 - docker install
 ```bash
 # 우분투 시스템 패키지 업데이트
@@ -24,10 +24,17 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 # Docker 설치 확인
 sudo systemctl status docker
 ```
----
-## node간 SSH key 교환
----
-## 2. kubespray clone
+
+- node간 SSH key 교환
+
+## 2. kubespray install
 ```bash
-https://github.com/kubernetes-sigs/kubespray.git
+root@87301a6af9e8:~# pwd
+/root
+
+root@mal-k8s-prx:~# git clone https://github.com/kubernetes-sigs/kubespray.git
+root@mal-k8s-prx:~# ssh-keygen -t rsa
+root@mal-k8s-prx:~# docker run --rm -it --mount type=bind,source="$(pwd)"/kubespray/inventory/sample,dst=/inventory   --mount type=bind,source="${HOME}"/.ssh/id_rsa,dst=/root/.ssh/id_rsa   quay.io/kubespray/kubespray:v2.27.0 bash
+root@0188f0719dd4:/kubespray# ansible-playbook -i /kubespray/inventory/sample/inventory.ini --private-key /root/.ssh/id_rsa cluster.yml
+
 ```
