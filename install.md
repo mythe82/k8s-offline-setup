@@ -50,19 +50,30 @@ mythe82@k8s-ctp01:~$ sudo vi /etc/hosts
 ### 1.3. docker install
 ```bash
 # 우분투 시스템 패키지 업데이트
-sudo apt-get update
+mythe82@k8s-ctp01:~$ sudo apt-get update
+
 # 필요한 패키지 설치
-sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+mythe82@k8s-ctp01:~$ sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+
 # Docker의 공식 GPG키를 추가
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+mythe82@k8s-ctp01:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
 # Docker의 공식 apt 저장소를 추가
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-# 시스템 패키지 업데이트
-sudo apt-get update
+mythe82@k8s-ctp01:~$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+mythe82@k8s-ctp01:~$ sudo apt-get update
+
 # Docker 설치
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+mythe82@k8s-ctp01:~$ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
 # Docker 설치 확인
-sudo systemctl status docker
+mythe82@k8s-ctp01:~$ sudo systemctl status docker
+mythe82@k8s-ctp01:~$ docker --version
+Docker version 28.1.1, build 4eba377
+
+[mythe82@mxdbp-aio-node docker_rpms]$ sudo usermod -aG docker $USER
+[mythe82@mxdbp-aio-node docker_rpms]$ newgrp docker
+[mythe82@mxdbp-aio-node docker_rpms]$ sudo chmod 666 /var/run/docker.sock
+
 ```
 
 
