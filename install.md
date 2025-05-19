@@ -10,7 +10,7 @@ GCP GCE 2대 생성하여 VM 구성
 
 * k8s-wkn01
   - 머신 유형 e2-medium (vCPU 2개, 메모리 4GB)
-  - 200GB 표준 영구 디스크
+  - 100GB 표준 영구 디스크
   - 이미지 ubuntu-2204-jammy-v20250508
 
 ### 1.2. OS PKG 구성 및 설정
@@ -23,11 +23,28 @@ mythe82@k8s-ctp01:~$ sudo vi /etc/hosts
 
 * 원격 명령을 위해 자동 login 설정 - SSH key 교환
 ```bash
+mythe82@k8s-ctp01:~$ ssh-keygen -t rsa -b 2048
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/mythe82/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/mythe82/.ssh/id_rsa
+Your public key has been saved in /home/mythe82/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:VkNo1oFOstjDcPOky/VMFFFjCqAbJhDS12PKrWG4c4I mythe82@k8s-ctp01
+The key's randomart image is:
++---[RSA 2048]----+
+|+o   ....+==+    |
+|... o.B Booo .   |
+|  .++X & .+      |
+|  .o*oB +...     |
+| . o.+ +S+       |
+|E + o o.  o      |
+|   +             |
+|                 |
+|                 |
++----[SHA256]-----+
 
-```
-
-* sudoers 설정
-```bash
 
 ```
 
