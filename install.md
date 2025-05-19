@@ -70,13 +70,9 @@ mythe82@k8s-ctp01:~$ sudo systemctl status docker
 mythe82@k8s-ctp01:~$ docker --version
 Docker version 28.1.1, build 4eba377
 
-[mythe82@mxdbp-aio-node docker_rpms]$ sudo usermod -aG docker $USER
-[mythe82@mxdbp-aio-node docker_rpms]$ newgrp docker
-[mythe82@mxdbp-aio-node docker_rpms]$ sudo chmod 666 /var/run/docker.sock
-
+mythe82@k8s-ctp01:~$ sudo usermod -aG docker $USER
+mythe82@k8s-ctp01:~$ newgrp docker
 ```
-
-
 
 ## 2. kubespray install
 ```bash
