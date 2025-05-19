@@ -103,19 +103,21 @@ mythe82@k8s-ctp01:~/kubespray$ docker run --rm -it --mount type=bind,source="$(p
 # background 모드 실행
 mythe82@k8s-ctp01:~/kubespray$ docker run -dit --name kubespray --mount type=bind,source=/home/mythe82/kubespray/inventory/sample,dst=/inventory   --mount type=bind,source="${HOME}"/.ssh/id_rsa,dst=/root/.ssh/id_rsa   quay.io/kubespray/kubespray:v2.26.0 bash
 mythe82@k8s-ctp01:~/kubespray$ docker exec -it kubespray bash
-root@db909f96020e:/kubespray# cd /inventory/
-root@db909f96020e:/inventory# vi inventory.ini
+root@db909f96020e:/kubespray# vi /inventory/inventory.ini
 [kube_control_plane]
-k8s-ctp01 ansible_host=10.142.0.6 ansible_connection=local # ip=10.3.0.1 etcd_member_name=etcd1
+[kube_control_plane]
+k8s-ctp01 ansible_host=10.142.0.6 ip=10.142.0.6 ansible_connection=local ansible_user=mythe82
 
 [etcd:children]
 kube_control_plane
 
 [kube_node]
-k8s-wkn01 ansible_host=10.142.0.7  # ip=10.3.0.4
+k8s-wkn01 ansible_host=10.142.0.7 ip=10.142.0.7 ansible_user=mythe82
 
+[k8s_cluster:children]
+kube_control_plane
+kube_node
 
-ansible-playbook -i /inventory/inventory.ini --private-key /root/.ssh/id_rsa cluster.yml
-
+root@db909f96020e:/kubespray# ansible-playbook -i /inventory/inventory.ini --private-key /root/.ssh/id_rsa cluster.yml
 
 ```
