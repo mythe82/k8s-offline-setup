@@ -1,6 +1,15 @@
-# k8s install
+# k8s kubespray install (non-air-gapped)
 
-## 1. 사전 준비
+## 1. infra 구성
+
+### 1.1. VM 준비
+GCP GCE 2대 생성하여 VM 구성
+* k8s-ctp01
+  - 머신 유형 e2-medium (vCPU 2개, 메모리 4GB)
+  - 200GB 표준 영구 디스크
+  - 이미지 ubuntu-2204-jammy-v20250508
+
+
 - docker install
 ```bash
 # 우분투 시스템 패키지 업데이트
