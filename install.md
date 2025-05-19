@@ -105,8 +105,7 @@ mythe82@k8s-ctp01:~/kubespray$ docker run -dit --name kubespray --mount type=bin
 mythe82@k8s-ctp01:~/kubespray$ docker exec -it kubespray bash
 root@db909f96020e:/kubespray# vi /inventory/inventory.ini
 [kube_control_plane]
-[kube_control_plane]
-k8s-ctp01 ansible_host=10.142.0.6 ip=10.142.0.6 ansible_connection=local ansible_user=mythe82
+k8s-ctp01 ansible_host=10.142.0.6 ip=10.142.0.6 ansible_user=mythe82
 
 [etcd:children]
 kube_control_plane
