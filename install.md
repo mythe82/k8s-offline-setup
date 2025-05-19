@@ -1,7 +1,6 @@
 # k8s kubespray install (non-air-gapped)
 
 ## 1. infra 구성
-
 ### 1.1. VM 준비
 GCP GCE 2대 생성하여 VM 구성
 * k8s-ctp01
@@ -9,10 +8,44 @@ GCP GCE 2대 생성하여 VM 구성
   - 200GB 표준 영구 디스크
   - 이미지 ubuntu-2204-jammy-v20250508
 
-* k8s-wkp01
+* k8s-wkn01
   - 머신 유형 e2-medium (vCPU 2개, 메모리 4GB)
   - 200GB 표준 영구 디스크
   - 이미지 ubuntu-2204-jammy-v20250508
+
+### 1.2. OS PKG 구성 및 설정
+* node hosts 설정
+```bash
+mythe82@k8s-ctp01:~$ sudo vi /etc/hosts
+10.142.0.6 k8s-ctp01 cp01
+10.142.0.7 k8s-wkn01 wk01
+```
+
+* 원격 명령을 위해 자동 login 설정 - SSH key 교환
+```bash
+
+```
+
+* sudoers 설정
+```bash
+
+```
+
+* GCP 메타데이터에 SSH 키 추가 GCP의 SSH 키 관리는 메타데이터에서 이루어집니다. SSH 키를 GCP 메타데이터에 추가하여 인스턴스 재부팅 후에도 유지되도록 설정합니다.
+1. GCP 콘솔에서 이동:
+  - GCP 프로젝트 > Compute Engine > VM 인스턴스로 이동합니다.
+2. 해당 인스턴스 선택:
+  - SSH 키를 추가할 인스턴스를 선택합니다.
+3. 편집(Edit) 버튼 클릭:
+  - 상단의 편집(Edit) 버튼을 클릭합니다.
+4. SSH 키 추가:
+  - SSH 키 섹션에서 공개 키(id_rsa.pub)를 추가합니다.
+  - 아래 명령을 사용하여 공개 키를 확인하고 복사합니다:
+  ```bash
+  cat ~/.ssh/id_rsa.pub
+  ```
+5. 저장:
+  - 변경 사항을 저장합니다.
 
 
 - docker install
