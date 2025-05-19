@@ -96,6 +96,7 @@ mythe82@k8s-ctp01:~$ newgrp docker
 mythe82@k8s-ctp01:~$ pwd
 /home/mythe82
 mythe82@k8s-ctp01:~$ git clone https://github.com/kubernetes-sigs/kubespray.git
+mythe82@k8s-ctp01:~$ cd kubespray/
 mythe82@k8s-ctp01:~/kubespray$ docker run --rm -it --mount type=bind,source="$(pwd)"/inventory/sample,dst=/inventory \
   --mount type=bind,source="${HOME}"/.ssh/id_rsa,dst=/root/.ssh/id_rsa \
   quay.io/kubespray/kubespray:v2.26.0 bash
@@ -105,18 +106,43 @@ mythe82@k8s-ctp01:~/kubespray$ docker run -dit --name kubespray --mount type=bin
 mythe82@k8s-ctp01:~/kubespray$ docker exec -it kubespray bash
 root@db909f96020e:/kubespray# vi /inventory/inventory.ini
 [kube_control_plane]
-k8s-ctp01 ansible_host=10.142.0.6 ip=10.142.0.6 ansible_user=mythe82
-
-[etcd:children]
-kube_control_plane
+k8s-ctp01 ansible_host=10.142.0.6 ip=10.142.0.6
 
 [kube_node]
-k8s-wkn01 ansible_host=10.142.0.7 ip=10.142.0.7 ansible_user=mythe82
+k8s-wkn01 ansible_host=10.142.0.7 ip=10.142.0.7
+
+[etcd]
+k8s-ctp01
 
 [k8s_cluster:children]
 kube_control_plane
 kube_node
 
-root@db909f96020e:/kubespray# ansible-playbook -i /inventory/inventory.ini --private-key /root/.ssh/id_rsa cluster.yml
+[all:vars]
+ansible_user=mythe82
+ansible_become=true
+ansible_become_method=sudo
+ansible_python_interpreter=/usr/bin/python3
 
+root@368124ddf987:/kubespray# ansible-playbook -i /inventory/inventory.ini   --private-key /root/.ssh/id_rsa   cluster.yml
 ```
+
+
+
+
+root@3c07a299da29:/kubespray/inventory/sample/group_vars# cd /kubespray/
+root@3c07a299da29:/kubespray# vi /inventory/inventory.ini 
+k8s-ctp01 ansible_host=35.211.151.103 ip=10.142.0.6
+k8s-wkn01 ansible_host=35.211.159.134 ip=10.142.0.7
+
+[kube_control_plane]
+k8s-ctp01
+
+[etcd]
+k8s-ctp01
+
+[kube_node]
+k8s-wkn01
+
+root@3c07a299da29:/kubespray# ansible-playbook -i /inventory cluster.yml -b -v \
+  --private-key /root/.ssh/id_rsa   cluster.yml
