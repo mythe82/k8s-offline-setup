@@ -134,11 +134,54 @@ ansible_python_interpreter=/usr/bin/python3
 
 #root@k8s-ctp01:~/kubespray/inventory/mythe82# docker run --rm -it -v "${HOME}"/kubespray/inventory/mythe82:/inventory -v "${HOME}"/.ssh/id_rsa:/root/.ssh/id_rsa quay.io/kubespray/kubespray:v2.14.0 ansible all -i /inventory/inventory.ini -m ping
 #root@k8s-ctp01:~/kubespray/inventory# docker run --rm -it --name kubespray   --mount type=bind,source="${HOME}"/kubespray/inventory/mythe82,dst=/inventory   --mount type=bind,source="${HOME}"/.ssh/id_rsa,dst=/root/.ssh/id_rsa   quay.io/kubespray/kubespray:v2.26.0 bash
-root@k8s-ctp01:~/kubespray/inventory/mythe82# docker run --rm -it -v "${HOME}"/kubespray/inventory/mythe82:/inventory -v "${HOME}"/.ssh/id_rsa:/root/.ssh/id_rsa quay.io/kubespray/kubespray:v2.14.0 ansible-playbook -i /inventory/inventory.ini -b cluster.yml
+root@k8s-ctp01:~/kubespray# docker run --rm -it -v "${HOME}"/kubespray/inventory/mythe82:/inventory -v "${HOME}"/.ssh/id_rsa:/root/.ssh/id_rsa quay.io/kubespray/kubespray:v2.23.0 ansible-playbook -i /inventory/inventory.ini -b cluster.yml
+
 ```
 
 
+=====
 
+* Kubespray 저장소 복제:
+git clone https://github.com/kubernetes-sigs/kubespray.git
+cd kubespray
+
+cp -rfp /root/kubespray/inventory/sample/* /root/kubespray/inventory/mycluster/
+
+* Docker 이미지 가져오기 또는 빌드:
+docker run --rm -it \
+  -v /root/kubespray/inventory/mycluster:/inventory \
+  -v /root/kubespray/contrib/ansible-docker/ansible.cfg:/ansible.cfg \
+  -v ~/.ssh/id_rsa:/root/.ssh/id_rsa \
+  quay.io/kubespray/kubespray:v2.25.0 bash
+
+3. Kubespray 설정
+vi /inventory/inventory.ini
+
+[all]
+k8s-ctp01 ansible_host=k8s-ctp01  ip=10.142.0.6
+k8s-wkn01 ansible_host=k8s-wkn01  ip=10.142.0.7
+
+[kube_control_plane]
+k8s-ctp01
+
+[etcd]
+k8s-ctp01
+
+[kube_node]
+k8s-wkn01
+
+[calico_rr]
+
+[k8s_cluster:children]
+kube_control_plane
+kube_node
+calico_rr
+
+4. Kubernetes 클러스터 배포
+ * Ansible 플레이북 실행:
+   다음 명령어를 사용하여 클러스터 배포를 시작합니다.
+   # 컨테이너 내부
+ansible-playbook -i /inventory/inventory.ini --become --become-user=root /kubespray/cluster.yml
 
 
 
