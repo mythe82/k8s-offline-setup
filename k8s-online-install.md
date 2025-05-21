@@ -3,12 +3,12 @@
 ## 1. infra 구성
 ### 1.1. VM 준비
 GCP GCE 2대 생성하여 VM 구성
-* k8s-ctp01
+* controller-1
   - 머신 유형 e2-medium (vCPU 2개, 메모리 4GB)
   - 200GB 표준 영구 디스크
   - 이미지 ubuntu-2204-jammy-v20250508
 
-* k8s-wkn01
+* worker-1
   - 머신 유형 e2-medium (vCPU 2개, 메모리 4GB)
   - 100GB 표준 영구 디스크
   - 이미지 ubuntu-2204-jammy-v20250508
