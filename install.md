@@ -31,6 +31,7 @@ INTERNAL_IPV6_RANGE:
 mythe82@cloudshell:~ (malee-457606)$ gcloud compute networks subnets create kubernetes \
   --network kubernetes-the-kubespray-way \
   --range 10.240.0.0/24
+  --region asia-east1
 Did you mean region [asia-east1] for subnetwork: [kubernetes] (Y/n)?  y
 
 Created [https://www.googleapis.com/compute/v1/projects/malee-457606/regions/asia-east1/subnetworks/kubernetes].
@@ -46,7 +47,94 @@ EXTERNAL_IPV6_PREFIX:
 
 * GCP 네트워크 방화벽 규칙 생성
 ```Cloud Shell
+# 모든 프로토콜에서 내부 통신을 허용
+mythe82@cloudshell:~ (malee-457606)$ gcloud compute firewall-rules create kubernetes-the-kubespray-way-allow-internal \
+  --allow tcp,udp,icmp,ipip \
+  --network kubernetes-the-kubespray-way \
+  --source-ranges 10.240.0.0/24
 
+Creating firewall...working..Created [https://www.googleapis.com/compute/v1/projects/malee-457606/global/firewalls/kubernetes-the-kubespray-way-allow-internal].
+Creating firewall...done.                                                      
+NAME: kubernetes-the-kubespray-way-allow-internal
+NETWORK: kubernetes-the-kubespray-way
+DIRECTION: INGRESS
+PRIORITY: 1000
+ALLOW: tcp,udp,icmp,ipip
+DENY: 
+DISABLED: False
+```
+
+```Cloud Shell
+# 외부 SSH, ICMP 및 HTTPS를 허용
+gcloud compute firewall-rules create kubernetes-the-kubespray-way-allow-external \
+  --allow tcp:80,tcp:6443,tcp:443,tcp:22,icmp \
+  --network kubernetes-the-kubespray-way \
+  --source-ranges 0.0.0.0/0
+
+Creating firewall...working..Created [https://www.googleapis.com/compute/v1/projects/malee-457606/global/firewalls/kubernetes-the-kubespray-way-allow-external].
+Creating firewall...done.                                                      
+NAME: kubernetes-the-kubespray-way-allow-external
+NETWORK: kubernetes-the-kubespray-way
+DIRECTION: INGRESS
+PRIORITY: 1000
+ALLOW: tcp:80,tcp:6443,tcp:443,tcp:22,icmp
+DENY: 
+DISABLED: False
+```
+
+* GCE VM 생성
+```Cloud Shell
+# master node
+mythe82@cloudshell:~ (malee-457606)$ for i in 1; do
+  gcloud compute instances create controller-${i} \
+    --async \
+    --boot-disk-size 200GB \
+    --can-ip-forward \
+    --image projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20250508 \
+    --machine-type e2-medium \
+    --private-network-ip 10.240.0.1${i} \
+    --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
+    --subnet kubernetes \
+    --tags kubernetes-the-kubespray-way,controller \
+    --zone=asia-east1-b
+done
+```
+
+```Cloud Shell
+# worker node
+mythe82@cloudshell:~ (malee-457606)$ for i in 1; do
+  gcloud compute instances create worker-${i} \
+    --async \
+    --boot-disk-size 100GB \
+    --can-ip-forward \
+    --image projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20250508 \
+    --machine-type e2-medium \
+    --private-network-ip 10.240.0.2${i} \
+    --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
+    --subnet kubernetes \
+    --tags kubernetes-the-kubespray-way,controller \
+    --zone=asia-east1-b
+done
+```
+
+```Cloud Shell
+# 생성 VM 확인
+mythe82@cloudshell:~ (malee-457606)$ gcloud compute instances list --filter="tags.items=kubernetes-the-kubespray-way"
+NAME: controller-1
+ZONE: asia-east1-b
+MACHINE_TYPE: e2-medium
+PREEMPTIBLE: 
+INTERNAL_IP: 10.240.0.11
+EXTERNAL_IP: 35.194.185.196
+STATUS: RUNNING
+
+NAME: worker-1
+ZONE: asia-east1-b
+MACHINE_TYPE: e2-medium
+PREEMPTIBLE: 
+INTERNAL_IP: 10.240.0.21
+EXTERNAL_IP: 34.80.42.10
+STATUS: RUNNING
 ```
 
 ### 1.2. OS PKG 구성 및 설정
