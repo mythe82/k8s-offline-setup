@@ -66,7 +66,7 @@ mythe82@k8s-ctp01:~/.ssh$ ssh-copy-id cp01
 mythe82@k8s-ctp01:~/.ssh$ ssh-copy-id wk01
 ```
 
-### 1.3. docker install
+### 1.3. install docker
 ```bash
 # 우분투 시스템 패키지 업데이트
 mythe82@k8s-ctp01:~$ sudo apt-get update
@@ -93,101 +93,24 @@ mythe82@k8s-ctp01:~$ sudo usermod -aG docker $USER
 mythe82@k8s-ctp01:~$ newgrp docker
 ```
 
-## 2. ansible install
+## 2. install ansible
 ```bash
-mythe82@k8s-ctp01:~$ pwd
-/home/mythe82
-mythe82@k8s-ctp01:~$ git clone https://github.com/kubernetes-sigs/kubespray.git
-mythe82@k8s-ctp01:~$ cd kubespray/inventory/
-mythe82@k8s-ctp01:~/kubespray/inventory$ cp -r sample/ mythe82
-root@db909f96020e:/kubespray# vi /inventory/inventory.ini
-[all]
-k8s-ctp01 ansible_host=10.142.0.6  ip=10.142.0.6
-k8s-wkn01 ansible_host=10.142.0.7  ip=10.142.0.7
+root@k8s-ctp01:~# cd
+root@k8s-ctp01:~# python3 -m venv kubespray-venv
+root@k8s-ctp01:~# source ~/kubespray-venv/bin/activate
+(kubespray-venv) root@k8s-ctp01:~# cd kubespray
+(kubespray-venv) root@k8s-ctp01:~# pip install -U -r requirements.txt
+```
 
-[kube_control_plane]
-k8s-ctp01
-
-[kube-master]
-k8s-ctp01
-
-[etcd]
-k8s-ctp01
-
-[kube_node]
-k8s-wkn01
-
-[kube-node]
-k8s-wkn01
-
-[calico_rr]
-
-[k8s-cluster:children]
-kube_control_plane
-kube_node
-calico_rr
-
-[all:vars]
-ansible_user=root
-ansible_python_interpreter=/usr/bin/python3
-
-
-#root@k8s-ctp01:~/kubespray/inventory/mythe82# docker run --rm -it -v "${HOME}"/kubespray/inventory/mythe82:/inventory -v "${HOME}"/.ssh/id_rsa:/root/.ssh/id_rsa quay.io/kubespray/kubespray:v2.14.0 ansible all -i /inventory/inventory.ini -m ping
-#root@k8s-ctp01:~/kubespray/inventory# docker run --rm -it --name kubespray   --mount type=bind,source="${HOME}"/kubespray/inventory/mythe82,dst=/inventory   --mount type=bind,source="${HOME}"/.ssh/id_rsa,dst=/root/.ssh/id_rsa   quay.io/kubespray/kubespray:v2.26.0 bash
-root@k8s-ctp01:~/kubespray# docker run --rm -it -v "${HOME}"/kubespray/inventory/mythe82:/inventory -v "${HOME}"/.ssh/id_rsa:/root/.ssh/id_rsa quay.io/kubespray/kubespray:v2.23.0 ansible-playbook -i /inventory/inventory.ini -b cluster.yml
-
+## 3. install kubernetes cluster
+```bash
+(kubespray-venv) root@k8s-ctp01:~/kubespray# ansible-playbook -i inventory/mycluster/inventory.ini cluster.yml -b -v --private-key=~/.ssh/id_rsa
+(kubespray-venv) root@k8s-ctp01:~/kubespray# kubectl get nodes
+NAME        STATUS   ROLES           AGE    VERSION
+k8s-ctp01   Ready    control-plane   141m   v1.32.5
+k8s-wkn01   Ready    <none>          141m   v1.32.5
 ```
 
 
-=====
 
-* Kubespray 저장소 복제:
-git clone https://github.com/kubernetes-sigs/kubespray.git
-cd kubespray
-
-cp -rfp /root/kubespray/inventory/sample/* /root/kubespray/inventory/mycluster/
-
-* Docker 이미지 가져오기 또는 빌드:
-docker run --rm -it \
-  -v /root/kubespray/inventory/mycluster:/inventory \
-  -v /root/kubespray/contrib/ansible-docker/ansible.cfg:/ansible.cfg \
-  -v ~/.ssh/id_rsa:/root/.ssh/id_rsa \
-  quay.io/kubespray/kubespray:v2.25.0 bash
-
-3. Kubespray 설정
-vi /inventory/inventory.ini
-
-[all]
-k8s-ctp01 ansible_host=k8s-ctp01  ip=10.142.0.6
-k8s-wkn01 ansible_host=k8s-wkn01  ip=10.142.0.7
-
-[kube_control_plane]
-k8s-ctp01
-
-[etcd]
-k8s-ctp01
-
-[kube_node]
-k8s-wkn01
-
-[calico_rr]
-
-[k8s_cluster:children]
-kube_control_plane
-kube_node
-calico_rr
-
-4. Kubernetes 클러스터 배포
- * Ansible 플레이북 실행:
-   다음 명령어를 사용하여 클러스터 배포를 시작합니다.
-   # 컨테이너 내부
-ansible-playbook -i /inventory/inventory.ini --become --become-user=root -vvv /kubespray/cluster.yml
-
-docker run --rm -it \
-  --add-host k8s-ctp01:10.142.0.6 \
-  --add-host k8s-wkn01:10.142.0.7 \
-  -v /root/kubespray/inventory/mycluster:/inventory \
-  -v /root/kubespray/contrib/ansible-docker/ansible.cfg:/ansible.cfg \
-  -v ~/.ssh/id_rsa:/root/.ssh/id_rsa \
-  quay.io/kubespray/kubespray:v2.25.0 bash
 
