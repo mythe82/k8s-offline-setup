@@ -14,8 +14,6 @@ GCP GCE 2대 생성하여 VM 구성
   - 이미지 ubuntu-2204-jammy-v20250508
 
 ### 1.2. OS PKG 구성 및 설정
-* 
-
 * node hosts 설정
 ```bash
 mythe82@k8s-ctp01:~$ sudo vi /etc/hosts
