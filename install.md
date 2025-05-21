@@ -22,6 +22,7 @@ mythe82@k8s-ctp01:~$ sudo vi /etc/hosts
 ```
 
 * 원격 명령을 위해 자동 login 설정 - SSH key 교환
+
 GCP 메타데이터에 SSH 키 추가 GCP의 SSH 키 관리는 메타데이터에서 이루어집니다. 사전에 SSH 키를 GCP 메타데이터에 추가하여 인스턴스 재부팅 후에도 유지되도록 설정합니다.
 1. **GCP 콘솔에서 이동**:
    - GCP 프로젝트 > **Compute Engine** > **VM 인스턴스**로 이동합니다.
