@@ -140,9 +140,9 @@ STATUS: RUNNING
 ### 1.2. OS PKG 구성 및 설정
 * node hosts 설정
 ```bash
-mythe82@k8s-ctp01:~$ sudo vi /etc/hosts
-10.142.0.6 k8s-ctp01 cp01
-10.142.0.7 k8s-wkn01 wk01
+mythe82@controller-1:~$ sudo vi /etc/hosts
+10.240.0.11 controller-1 ct01
+10.240.0.21 worker-1 wk01
 ```
 
 * 원격 명령을 위해 자동 login 설정 - SSH key 교환
@@ -163,75 +163,103 @@ GCP 메타데이터에 SSH 키 추가 GCP의 SSH 키 관리는 메타데이터�
 5. **저장**:
    - 변경 사항을 저장합니다.
 ```bash
-mythe82@k8s-ctp01:~$ ssh-keygen -t rsa -b 2048
-Generating public/private rsa key pair.
-Enter file in which to save the key (/home/mythe82/.ssh/id_rsa): 
-Enter passphrase (empty for no passphrase): 
-Enter same passphrase again: 
-Your identification has been saved in /home/mythe82/.ssh/id_rsa
-Your public key has been saved in /home/mythe82/.ssh/id_rsa.pub
-The key fingerprint is:
-SHA256:VkNo1oFOstjDcPOky/VMFFFjCqAbJhDS12PKrWG4c4I mythe82@k8s-ctp01
-The key's randomart image is:
-+---[RSA 2048]----+
-|+o   ....+==+    |
-|... o.B Booo .   |
-|  .++X & .+      |
-|  .o*oB +...     |
-| . o.+ +S+       |
-|E + o o.  o      |
-|   +             |
-|                 |
-|                 |
-+----[SHA256]-----+
-
-mythe82@k8s-ctp01:~/.ssh$ ssh-copy-id cp01
-mythe82@k8s-ctp01:~/.ssh$ ssh-copy-id wk01
+mythe82@controller-1:~$ ssh-keygen -t rsa -b 2048
+[enter]
+[enter]
+[enter]
+mythe82@controller-1:~$ ssh-copy-id ct01
+[yes]
+mythe82@controller-1:~$ ssh-copy-id wk01
+[yes]
 ```
 
 ### 1.3. install docker
 ```bash
 # 우분투 시스템 패키지 업데이트
-mythe82@k8s-ctp01:~$ sudo apt-get update
+mythe82@controller-1:~$ sudo uname -a
+Linux controller-1 6.8.0-1029-gcp #31~22.04.1-Ubuntu SMP Mon Apr 21 06:39:59 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+
+mythe82@controller-1:~$ sudo apt-get update
+mythe82@controller-1:~$ sudo uname -a
+Linux controller-1 6.8.0-1029-gcp #31~22.04.1-Ubuntu SMP Mon Apr 21 06:39:59 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
 
 # 필요한 패키지 설치
-mythe82@k8s-ctp01:~$ sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+mythe82@controller-1:~$ sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 
 # Docker의 공식 GPG키를 추가
-mythe82@k8s-ctp01:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+mythe82@controller-1:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
 # Docker의 공식 apt 저장소를 추가
-mythe82@k8s-ctp01:~$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-mythe82@k8s-ctp01:~$ sudo apt-get update
+mythe82@controller-1:~$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+mythe82@controller-1:~$ sudo apt-get update
 
 # Docker 설치
-mythe82@k8s-ctp01:~$ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+mythe82@controller-1:~$ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # Docker 설치 확인
-mythe82@k8s-ctp01:~$ sudo systemctl status docker
-mythe82@k8s-ctp01:~$ docker --version
+mythe82@controller-1:~$ sudo systemctl status docker
+mythe82@controller-1:~$ docker --version
 Docker version 28.1.1, build 4eba377
 
-mythe82@k8s-ctp01:~$ sudo usermod -aG docker $USER
-mythe82@k8s-ctp01:~$ newgrp docker
+mythe82@controller-1:~$ sudo usermod -aG docker $USER
+mythe82@controller-1:~$ newgrp docker
 ```
 
 ## 2. install ansible
 ```bash
-root@k8s-ctp01:~# cd
-root@k8s-ctp01:~# python3 -m venv kubespray-venv
-root@k8s-ctp01:~# source ~/kubespray-venv/bin/activate
-(kubespray-venv) root@k8s-ctp01:~# cd kubespray
-(kubespray-venv) root@k8s-ctp01:~# pip install -U -r requirements.txt
+mythe82@controller-1:~$ cd
+mythe82@controller-1:~$ sudo apt install -y python3.10-venv build-essential python3-dev
+mythe82@controller-1:~$ python3 -m venv kubespray-venv
+mythe82@controller-1:~$ source ~/kubespray-venv/bin/activate
+(kubespray-venv) mythe82@controller-1:~$ git clone https://github.com/kubernetes-sigs/kubespray.git
+(kubespray-venv) mythe82@controller-1:~$ cd kubespray
+(kubespray-venv) mythe82@controller-1:~/kubespray$ git checkout release-2.17
+Branch 'release-2.17' set up to track remote branch 'release-2.17' from 'origin'.
+Switched to a new branch 'release-2.17'
+(kubespray-venv) mythe82@controller-1:~/kubespray$ pip install -U -r requirements.txt
 ```
 
 ## 3. install kubernetes cluster
 ```bash
+(kubespray-venv) mythe82@controller-1:~/kubespray$ cp -rp ~/kubespray/inventory/sample ~/kubespray/inventory/mycluster
+(kubespray-venv) mythe82@controller-1:~/kubespray$ vi ~/kubespray/inventory/mycluster/inventory.ini 
+[all]
+controller-1 ansible_host=controller-1  ip=10.240.0.11
+worker-1 ansible_host=worker-1  ip=10.240.0.21
+
+[kube_control_plane]
+controller-1
+
+[etcd]
+controller-1
+
+[kube_node]
+worker-1
+
+[calico_rr]
+
+[k8s_cluster:children]
+kube_control_plane
+kube_node
+calico_rr
+
 (kubespray-venv) root@k8s-ctp01:~/kubespray# ansible-playbook -i inventory/mycluster/inventory.ini cluster.yml -b -v --private-key=~/.ssh/id_rsa
 (kubespray-venv) root@k8s-ctp01:~/kubespray# kubectl get nodes
 NAME        STATUS   ROLES           AGE    VERSION
 k8s-ctp01   Ready    control-plane   141m   v1.32.5
 k8s-wkn01   Ready    <none>          141m   v1.32.5
+
+(kubespray-venv) mythe82@controller-1:~/kubespray$ vi ./roles/kubernetes/preinstall/vars/ubuntu.yml
+---
+required_pkgs:
+  - python3-apt
+    #  - aufs-tools
+  - apt-transport-https
+  - software-properties-common
+  - conntrack
+  - apparmor
+
+(kubespray-venv) mythe82@controller-1:~/kubespray$ ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -v --private-key=~/.ssh/id_rsa ~/kubespray/cluster.yml
 ```
 
 
