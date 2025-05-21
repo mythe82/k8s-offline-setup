@@ -14,6 +14,7 @@ GCP GCE 2대 생성하여 VM 구성
   - 이미지 ubuntu-2204-jammy-v20250508
 
  * GCP VPC 생성
+   
 Cloud Shell 터미널에서 명령어 실행
 ```Cloud Shell
 mythe82@cloudshell:~ (malee-457606)$ gcloud compute networks create kubernetes-the-kubespray-way --subnet-mode custom
