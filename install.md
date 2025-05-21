@@ -13,6 +13,42 @@ GCP GCE 2대 생성하여 VM 구성
   - 100GB 표준 영구 디스크
   - 이미지 ubuntu-2204-jammy-v20250508
 
+ * GCP VPC 생성
+Cloud Shell 터미널에서 명령어 실행
+```Cloud Shell
+mythe82@cloudshell:~ (malee-457606)$ gcloud compute networks create kubernetes-the-kubespray-way --subnet-mode custom
+Created [https://www.googleapis.com/compute/v1/projects/malee-457606/global/networks/kubernetes-the-kubespray-way].
+NAME: kubernetes-the-kubespray-way
+SUBNET_MODE: CUSTOM
+BGP_ROUTING_MODE: REGIONAL
+IPV4_RANGE: 
+GATEWAY_IPV4: 
+INTERNAL_IPV6_RANGE: 
+```
+
+* GCP VPC subnet 생성
+```Cloud Shell
+mythe82@cloudshell:~ (malee-457606)$ gcloud compute networks subnets create kubernetes \
+  --network kubernetes-the-kubespray-way \
+  --range 10.240.0.0/24
+Did you mean region [asia-east1] for subnetwork: [kubernetes] (Y/n)?  y
+
+Created [https://www.googleapis.com/compute/v1/projects/malee-457606/regions/asia-east1/subnetworks/kubernetes].
+NAME: kubernetes
+REGION: asia-east1
+NETWORK: kubernetes-the-kubespray-way
+RANGE: 10.240.0.0/24
+STACK_TYPE: IPV4_ONLY
+IPV6_ACCESS_TYPE: 
+INTERNAL_IPV6_PREFIX: 
+EXTERNAL_IPV6_PREFIX: 
+```
+
+* GCP 네트워크 방화벽 규칙 생성
+```Cloud Shell
+
+```
+
 ### 1.2. OS PKG 구성 및 설정
 * node hosts 설정
 ```bash
