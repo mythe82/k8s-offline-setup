@@ -181,7 +181,13 @@ calico_rr
  * Ansible 플레이북 실행:
    다음 명령어를 사용하여 클러스터 배포를 시작합니다.
    # 컨테이너 내부
-ansible-playbook -i /inventory/inventory.ini --become --become-user=root /kubespray/cluster.yml
+ansible-playbook -i /inventory/inventory.ini --become --become-user=root -vvv /kubespray/cluster.yml
 
-
+docker run --rm -it \
+  --add-host k8s-ctp01:10.142.0.6 \
+  --add-host k8s-wkn01:10.142.0.7 \
+  -v /root/kubespray/inventory/mycluster:/inventory \
+  -v /root/kubespray/contrib/ansible-docker/ansible.cfg:/ansible.cfg \
+  -v ~/.ssh/id_rsa:/root/.ssh/id_rsa \
+  quay.io/kubespray/kubespray:v2.25.0 bash
 
