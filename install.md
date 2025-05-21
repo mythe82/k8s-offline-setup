@@ -213,9 +213,6 @@ mythe82@controller-1:~$ python3 -m venv kubespray-venv
 mythe82@controller-1:~$ source ~/kubespray-venv/bin/activate
 (kubespray-venv) mythe82@controller-1:~$ git clone https://github.com/kubernetes-sigs/kubespray.git
 (kubespray-venv) mythe82@controller-1:~$ cd kubespray
-(kubespray-venv) mythe82@controller-1:~/kubespray$ git checkout release-2.17
-Branch 'release-2.17' set up to track remote branch 'release-2.17' from 'origin'.
-Switched to a new branch 'release-2.17'
 (kubespray-venv) mythe82@controller-1:~/kubespray$ pip install -U -r requirements.txt
 ```
 
@@ -243,23 +240,16 @@ kube_control_plane
 kube_node
 calico_rr
 
-(kubespray-venv) root@k8s-ctp01:~/kubespray# ansible-playbook -i inventory/mycluster/inventory.ini cluster.yml -b -v --private-key=~/.ssh/id_rsa
-(kubespray-venv) root@k8s-ctp01:~/kubespray# kubectl get nodes
-NAME        STATUS   ROLES           AGE    VERSION
-k8s-ctp01   Ready    control-plane   141m   v1.32.5
-k8s-wkn01   Ready    <none>          141m   v1.32.5
-
-(kubespray-venv) mythe82@controller-1:~/kubespray$ vi ./roles/kubernetes/preinstall/vars/ubuntu.yml
----
-required_pkgs:
-  - python3-apt
-    #  - aufs-tools
-  - apt-transport-https
-  - software-properties-common
-  - conntrack
-  - apparmor
-
 (kubespray-venv) mythe82@controller-1:~/kubespray$ ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -v --private-key=~/.ssh/id_rsa ~/kubespray/cluster.yml
+(kubespray-venv) mythe82@controller-1:~/kubespray$ sudo chown -R mythe82:mythe82 /etc/kubernetes/admin.conf
+(kubespray-venv) mythe82@controller-1:~/kubespray$ cp /etc/kubernetes/admin.conf kubespray-do.conf
+(kubespray-venv) mythe82@controller-1:~/kubespray$ export KUBECONFIG=$PWD/kubespray-do.conf
+(kubespray-venv) mythe82@controller-1:~/kubespray$ kubectl get nodes
+NAME           STATUS   ROLES           AGE   VERSION
+controller-1   Ready    control-plane   22m   v1.32.5
+worker-1       Ready    <none>          21m   v1.32.5
+
+
 ```
 
 
