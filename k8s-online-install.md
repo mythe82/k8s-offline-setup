@@ -271,18 +271,19 @@ kube_node
 calico_rr
 
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -v --private-key=~/.ssh/id_rsa ~/kubespray/cluster.yml
-
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ sudo chown -R mythe82:mythe82 /etc/kubernetes/admin.conf
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ cp /etc/kubernetes/admin.conf kubespray-do.conf
-(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ export KUBECONFIG=$PWD/kubespray-do.conf
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ vi ~/.profile
+export KUBECONFIG=$HOME/kubespray/kubespray-do.conf
+
+# alias kubectl to k 
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ echo 'alias k=kubectl' >> ~/.bashrc
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ echo "alias ka='kubectl apply -f'" >> ~/.bashrc
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ echo 'complete -F __start_kubectl k' >> ~/.bashrc
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ . ~/.profile 
+
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ kubectl get nodes
 NAME               STATUS   ROLES           AGE     VERSION
 k8s-controller-1   Ready    control-plane   5m21s   v1.32.5
 k8s-worker-1       Ready    <none>          4m31s   v1.32.5
-
-
 ```
-
-
-
-
