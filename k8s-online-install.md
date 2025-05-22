@@ -202,38 +202,6 @@ mythe82@k8s-controller-1:~$ sudo apt-get install -y nfs-server nfs-common
 mythe82@k8s-worker-1:~$ sudo apt-get install -y nfs-common
 ```
 
-### 1.3. install docker - skip하고 해보기
-```bash
-# 우분투 시스템 패키지 업데이트
-mythe82@controller-1:~$ sudo uname -a
-Linux controller-1 6.8.0-1029-gcp #31~22.04.1-Ubuntu SMP Mon Apr 21 06:39:59 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
-
-mythe82@controller-1:~$ sudo apt-get update
-mythe82@controller-1:~$ sudo uname -a
-Linux controller-1 6.8.0-1029-gcp #31~22.04.1-Ubuntu SMP Mon Apr 21 06:39:59 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
-
-# 필요한 패키지 설치
-mythe82@controller-1:~$ sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-
-# Docker의 공식 GPG키를 추가
-mythe82@controller-1:~$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
-# Docker의 공식 apt 저장소를 추가
-mythe82@controller-1:~$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-mythe82@controller-1:~$ sudo apt-get update
-
-# Docker 설치
-mythe82@controller-1:~$ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-
-# Docker 설치 확인
-mythe82@controller-1:~$ sudo systemctl status docker
-mythe82@controller-1:~$ docker --version
-Docker version 28.1.1, build 4eba377
-
-mythe82@controller-1:~$ sudo usermod -aG docker $USER
-mythe82@controller-1:~$ newgrp docker
-```
-
 ## 2. install ansible
 ```bash
 mythe82@k8s-controller-1:~$ cd
@@ -271,6 +239,8 @@ kube_node
 calico_rr
 
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -v --private-key=~/.ssh/id_rsa ~/kubespray/cluster.yml
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ ansible all -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -a "crictl images"
+
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ sudo chown -R mythe82:mythe82 /etc/kubernetes/admin.conf
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ cp /etc/kubernetes/admin.conf kubespray-do.conf
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ vi ~/.profile
@@ -287,3 +257,5 @@ NAME               STATUS   ROLES           AGE     VERSION
 k8s-controller-1   Ready    control-plane   5m21s   v1.32.5
 k8s-worker-1       Ready    <none>          4m31s   v1.32.5
 ```
+
+
