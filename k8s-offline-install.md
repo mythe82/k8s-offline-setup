@@ -56,10 +56,22 @@ drwxrwxr-x 2 mythe82 mythe82      4096 May 22 08:17 temp
 drwxrwxr-x 6 mythe82 mythe82      4096 May 22 08:37 offline-files
 -rw-rw-r-- 1 mythe82 mythe82 923613797 May 22 08:38 offline-files.tar.gz
 ```
-============================================= 여기부터 다시~~~~
 
 ## 3. 오프라인 환경으로 데이터 이동
 위 단계에서 생성된 이미지와 파일(예: temp 디렉터리 전체, 다운로드된 이미지 tar 파일 등)을 오프라인 환경으로 복사합니다.
+```bash
+mythe82@k8s-controller-1:~$ ls -ltr
+-rw-rw-r--  1 mythe82 mythe82 2437876671 May 22 12:32 kubespray-offline.tar.gz
+
+mythe82@k8s-controller-1:~$ tar xvfz kubespray-offline.tar.gz
+mythe82@k8s-controller-1:~$ ls -ltr
+drwxrwxr-x 18 mythe82 mythe82       4096 May 22 12:24 kubespray
+-rw-rw-r--  1 mythe82 mythe82 2437876671 May 22 12:32 kubespray-offline.tar.gz
+```
+
+
+=================== 여기 부터~~~~
+
 
 ## 4. 오프라인 환경에서 레지스트리 및 파일 서버 구성
 ### 4.1. 로컬 레지스트리에 이미지 등록
@@ -73,6 +85,11 @@ drwxrwxr-x 6 mythe82 mythe82      4096 May 22 08:37 offline-files
 
 ### 4.2. 파일 서버 실행
 오프라인 환경에서 nginx 파일 서버가 실행 중인지 확인합니다. 필요하다면 위의 manage-offline-files.sh 스크립트로 다시 실행합니다.
+
+
+
+
+
 
 ## 5. Kubespray로 오프라인 설치 진행
 오프라인 환경에서 Kubespray 인벤토리와 설정에 맞게 클러스터 설치를 진행합니다.
