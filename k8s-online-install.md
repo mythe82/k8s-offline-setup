@@ -258,4 +258,48 @@ k8s-controller-1   Ready    control-plane   5m21s   v1.32.5
 k8s-worker-1       Ready    <none>          4m31s   v1.32.5
 ```
 
+## 4. deployment test
+```bash
+(kubespray-venv) mythe82@k8s-controller-1:~$ vi nginx-test.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: NodePort
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
 
+(kubespray-venv) mythe82@k8s-controller-1:~$ kubectl apply -f nginx-test.yaml
+(kubespray-venv) mythe82@k8s-controller-1:~$ k get po
+NAME                              READY   STATUS    RESTARTS   AGE
+nginx-deployment-96b9d695-fn45s   1/1     Running   0          3m48s
+
+(kubespray-venv) mythe82@k8s-controller-1:~$ k get svc nginx-service 
+NAME            TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+nginx-service   NodePort   10.233.1.159   <none>        80:30080/TCP   4m5s
+```
