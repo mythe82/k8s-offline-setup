@@ -3,12 +3,12 @@
 ## 1. infra 구성
 ### 1.1. VM 준비
 GCP GCE 2대 생성하여 VM 구성
-* controller-1
+* k8s-controller-1
   - 머신 유형 e2-medium (vCPU 2개, 메모리 4GB)
   - 200GB 표준 영구 디스크
   - 이미지 ubuntu-2204-jammy-v20250508
 
-* worker-1
+* k8s-worker-1
   - 머신 유형 e2-medium (vCPU 2개, 메모리 4GB)
   - 100GB 표준 영구 디스크
   - 이미지 ubuntu-2204-jammy-v20250508
@@ -31,15 +31,14 @@ INTERNAL_IPV6_RANGE:
 ```Cloud Shell
 mythe82@cloudshell:~ (malee-457606)$ gcloud compute networks subnets create kubernetes \
   --network kubernetes-the-kubespray-way \
-  --range 10.240.0.0/24
-  --region asia-east1
-Did you mean region [asia-east1] for subnetwork: [kubernetes] (Y/n)?  y
+  --range 10.178.0.0/24 \
+  --region asia-northeast3
 
-Created [https://www.googleapis.com/compute/v1/projects/malee-457606/regions/asia-east1/subnetworks/kubernetes].
+Created [https://www.googleapis.com/compute/v1/projects/malee-457606/regions/asia-northeast3/subnetworks/kubernetes].
 NAME: kubernetes
-REGION: asia-east1
+REGION: asia-northeast3
 NETWORK: kubernetes-the-kubespray-way
-RANGE: 10.240.0.0/24
+RANGE: 10.178.0.0/24
 STACK_TYPE: IPV4_ONLY
 IPV6_ACCESS_TYPE: 
 INTERNAL_IPV6_PREFIX: 
@@ -52,10 +51,10 @@ EXTERNAL_IPV6_PREFIX:
 mythe82@cloudshell:~ (malee-457606)$ gcloud compute firewall-rules create kubernetes-the-kubespray-way-allow-internal \
   --allow tcp,udp,icmp,ipip \
   --network kubernetes-the-kubespray-way \
-  --source-ranges 10.240.0.0/24
+  --source-ranges 10.178.0.0/24
 
-Creating firewall...working..Created [https://www.googleapis.com/compute/v1/projects/malee-457606/global/firewalls/kubernetes-the-kubespray-way-allow-internal].
-Creating firewall...done.                                                      
+Creating firewall...working..Created [https://www.googleapis.com/compute/v1/projects/malee-457606/global/firewalls/kubernetes-the-kubespray-way-allow-internal].                 
+Creating firewall...done.                                                                                                                                                                                                 
 NAME: kubernetes-the-kubespray-way-allow-internal
 NETWORK: kubernetes-the-kubespray-way
 DIRECTION: INGRESS
@@ -67,13 +66,13 @@ DISABLED: False
 
 ```Cloud Shell
 # 외부 SSH, ICMP 및 HTTPS를 허용
-gcloud compute firewall-rules create kubernetes-the-kubespray-way-allow-external \
+mythe82@cloudshell:~ (malee-457606)$ gcloud compute firewall-rules create kubernetes-the-kubespray-way-allow-external \
   --allow tcp:80,tcp:6443,tcp:443,tcp:22,icmp \
   --network kubernetes-the-kubespray-way \
   --source-ranges 0.0.0.0/0
 
-Creating firewall...working..Created [https://www.googleapis.com/compute/v1/projects/malee-457606/global/firewalls/kubernetes-the-kubespray-way-allow-external].
-Creating firewall...done.                                                      
+Creating firewall...working..Created [https://www.googleapis.com/compute/v1/projects/malee-457606/global/firewalls/kubernetes-the-kubespray-way-allow-external].                       
+Creating firewall...done.
 NAME: kubernetes-the-kubespray-way-allow-external
 NETWORK: kubernetes-the-kubespray-way
 DIRECTION: INGRESS
@@ -87,68 +86,68 @@ DISABLED: False
 ```Cloud Shell
 # master node
 mythe82@cloudshell:~ (malee-457606)$ for i in 1; do
-  gcloud compute instances create controller-${i} \
+  gcloud compute instances create k8s-controller-${i} \
     --async \
     --boot-disk-size 200GB \
     --can-ip-forward \
     --image projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20250508 \
-    --machine-type e2-medium \
-    --private-network-ip 10.240.0.1${i} \
+    --machine-type e2-standard-2 \
+    --private-network-ip 10.178.0.1${i} \
     --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
     --subnet kubernetes \
     --tags kubernetes-the-kubespray-way,controller \
-    --zone=asia-east1-b
+    --zone=asia-northeast3-a
 done
 ```
 
 ```Cloud Shell
 # worker node
 mythe82@cloudshell:~ (malee-457606)$ for i in 1; do
-  gcloud compute instances create worker-${i} \
+  gcloud compute instances create k8s-worker-${i} \
     --async \
     --boot-disk-size 100GB \
     --can-ip-forward \
     --image projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20250508 \
     --machine-type e2-medium \
-    --private-network-ip 10.240.0.2${i} \
+    --private-network-ip 10.178.0.2${i} \
     --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
     --subnet kubernetes \
     --tags kubernetes-the-kubespray-way,controller \
-    --zone=asia-east1-b
+    --zone=asia-northeast3-a
 done
 ```
 
 ```Cloud Shell
 # 생성 VM 확인
 mythe82@cloudshell:~ (malee-457606)$ gcloud compute instances list --filter="tags.items=kubernetes-the-kubespray-way"
-NAME: controller-1
-ZONE: asia-east1-b
-MACHINE_TYPE: e2-medium
+NAME: k8s-controller-1
+ZONE: asia-northeast3-a
+MACHINE_TYPE: e2-standard-2
 PREEMPTIBLE: 
-INTERNAL_IP: 10.240.0.11
-EXTERNAL_IP: 35.194.185.196
+INTERNAL_IP: 10.178.0.11
+EXTERNAL_IP: 34.22.106.218
 STATUS: RUNNING
 
-NAME: worker-1
-ZONE: asia-east1-b
+NAME: k8s-worker-1
+ZONE: asia-northeast3-a
 MACHINE_TYPE: e2-medium
 PREEMPTIBLE: 
-INTERNAL_IP: 10.240.0.21
-EXTERNAL_IP: 34.80.42.10
+INTERNAL_IP: 10.178.0.21
+EXTERNAL_IP: 34.64.70.51
 STATUS: RUNNING
 ```
 
 ### 1.2. OS PKG 구성 및 설정
 * node hosts 설정
 ```bash
-mythe82@controller-1:~$ sudo vi /etc/hosts
-10.240.0.11 controller-1 ct01
-10.240.0.21 worker-1 wk01
+mythe82@k8s-controller-1:~$ sudo vi /etc/hosts
+10.178.0.11 k8s-controller-1 ct01
+10.178.0.21 k8s-worker-1 wk01
 ```
 
 * 원격 명령을 위해 자동 login 설정 - SSH key 교환
 ```bash
-mythe82@controller-1:~$ ssh-keygen -t rsa -b 2048
+mythe82@k8s-controller-1:~$ ssh-keygen -t rsa -b 2048
 [enter]
 [enter]
 [enter]
@@ -170,10 +169,37 @@ GCP 메타데이터에 SSH 키 추가 GCP의 SSH 키 관리는 메타데이터�
    - 변경 사항을 저장합니다.
 
 ```bash
-mythe82@controller-1:~$ ssh-copy-id ct01
+mythe82@k8s-controller-1:~$ ssh-copy-id ct01
 [yes]
-mythe82@controller-1:~$ ssh-copy-id wk01
+mythe82@k8s-controller-1:~$ ssh-copy-id wk01
 [yes]
+```
+
+* swapoff (모든 노드 실행)
+```bash
+mythe82@k8s-controller-1:~$ swapoff -a
+mythe82@k8s-controller-1:~$ sudo sed -i.bak -r 's/(.+swap.+)/#\1/' /etc/fstab
+
+mythe82@k8s-worker-1:~$ swapoff -a
+mythe82@k8s-worker-1:~$ sudo sed -i.bak -r 's/(.+swap.+)/#\1/' /etc/fstab
+```
+
+* 네트워크 패킷 라우팅, 보안 정책 iptables 적용 (모든 노드 실행)
+```bash
+mythe82@k8s-controller-1:~$ echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+mythe82@k8s-controller-1:~$ sudo modprobe br_netfilter
+
+mythe82@k8s-worker-1:~$ echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
+mythe82@k8s-worker-1:~$ sudo modprobe br_netfilter
+```
+
+* install NFS
+```bash
+# ct01 노드 실행
+mythe82@k8s-controller-1:~$ sudo apt-get install -y nfs-server nfs-common 
+
+# wk01 노드 실행
+mythe82@k8s-worker-1:~$ sudo apt-get install -y nfs-common
 ```
 
 ### 1.3. install docker - skip하고 해보기
@@ -210,31 +236,32 @@ mythe82@controller-1:~$ newgrp docker
 
 ## 2. install ansible
 ```bash
-mythe82@controller-1:~$ cd
-mythe82@controller-1:~$ sudo apt install -y python3.10-venv build-essential python3-dev
-mythe82@controller-1:~$ python3 -m venv kubespray-venv
-mythe82@controller-1:~$ source ~/kubespray-venv/bin/activate
-(kubespray-venv) mythe82@controller-1:~$ git clone https://github.com/kubernetes-sigs/kubespray.git
-(kubespray-venv) mythe82@controller-1:~$ cd kubespray
-(kubespray-venv) mythe82@controller-1:~/kubespray$ pip install -U -r requirements.txt
+mythe82@k8s-controller-1:~$ cd
+mythe82@k8s-controller-1:~$ sudo apt update
+mythe82@k8s-controller-1:~$ sudo apt install python3-venv
+mythe82@k8s-controller-1:~$ python3 -m venv kubespray-venv
+mythe82@k8s-controller-1:~$ source ~/kubespray-venv/bin/activate
+(kubespray-venv) mythe82@k8s-controller-1:~$ git clone https://github.com/kubernetes-sigs/kubespray.git
+(kubespray-venv) mythe82@k8s-controller-1:~$ cd kubespray
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ pip install -U -r requirements.txt
 ```
 
 ## 3. install kubernetes cluster
 ```bash
-(kubespray-venv) mythe82@controller-1:~/kubespray$ cp -rp ~/kubespray/inventory/sample ~/kubespray/inventory/mycluster
-(kubespray-venv) mythe82@controller-1:~/kubespray$ vi ~/kubespray/inventory/mycluster/inventory.ini 
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ cp -rp ~/kubespray/inventory/sample ~/kubespray/inventory/mycluster
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ vi ~/kubespray/inventory/mycluster/inventory.ini 
 [all]
-controller-1 ansible_host=controller-1  ip=10.240.0.11
-worker-1 ansible_host=worker-1  ip=10.240.0.21
+k8s-controller-1 ansible_host=k8s-controller-1  ip=10.178.0.11
+k8s-worker-1 ansible_host=k8s-worker-1  ip=10.178.0.21
 
 [kube_control_plane]
-controller-1
+k8s-controller-1
 
 [etcd]
-controller-1
+k8s-controller-1
 
 [kube_node]
-worker-1
+k8s-worker-1
 
 [calico_rr]
 
@@ -243,14 +270,15 @@ kube_control_plane
 kube_node
 calico_rr
 
-(kubespray-venv) mythe82@controller-1:~/kubespray$ ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -v --private-key=~/.ssh/id_rsa ~/kubespray/cluster.yml
-(kubespray-venv) mythe82@controller-1:~/kubespray$ sudo chown -R mythe82:mythe82 /etc/kubernetes/admin.conf
-(kubespray-venv) mythe82@controller-1:~/kubespray$ cp /etc/kubernetes/admin.conf kubespray-do.conf
-(kubespray-venv) mythe82@controller-1:~/kubespray$ export KUBECONFIG=$PWD/kubespray-do.conf
-(kubespray-venv) mythe82@controller-1:~/kubespray$ kubectl get nodes
-NAME           STATUS   ROLES           AGE   VERSION
-controller-1   Ready    control-plane   22m   v1.32.5
-worker-1       Ready    <none>          21m   v1.32.5
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -v --private-key=~/.ssh/id_rsa ~/kubespray/cluster.yml
+
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ sudo chown -R mythe82:mythe82 /etc/kubernetes/admin.conf
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ cp /etc/kubernetes/admin.conf kubespray-do.conf
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ export KUBECONFIG=$PWD/kubespray-do.conf
+(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ kubectl get nodes
+NAME               STATUS   ROLES           AGE     VERSION
+k8s-controller-1   Ready    control-plane   5m21s   v1.32.5
+k8s-worker-1       Ready    <none>          4m31s   v1.32.5
 
 
 ```
