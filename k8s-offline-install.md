@@ -338,8 +338,10 @@ kube_control_plane
 kube_node
 calico_rr
 
+
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -v --private-key=~/.ssh/id_rsa ~/kubespray/cluster.yml
-(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ ansible all -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -a "crictl images"
+# (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ ansible-playbook -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -v --private-key=~/.ssh/id_rsa ~/kubespray/cluster.yml -e "registry_host=k8s-controller-1:5000 files_repo=http://10.178.0.11:8080 ubuntu_repo=10.178.0.11/apt"
+#(kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ ansible all -i ~/kubespray/inventory/mycluster/inventory.ini -u mythe82 -b -a "crictl images"
 
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ sudo chown -R mythe82:mythe82 /etc/kubernetes/admin.conf
 (kubespray-venv) mythe82@k8s-controller-1:~/kubespray$ cp /etc/kubernetes/admin.conf kubespray-do.conf
