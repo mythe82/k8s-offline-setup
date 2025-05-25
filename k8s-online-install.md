@@ -196,10 +196,26 @@ mythe82@k8s-worker-1:~$ sudo modprobe br_netfilter
 * install NFS
 ```bash
 # ct01 노드 실행
-mythe82@k8s-controller-1:~$ sudo apt-get install -y nfs-server nfs-common 
+mythe82@k8s-controller-1:~$ sudo apt-get install -y nfs-server nfs-common rpcbind portmap
+
+# 공유할 directory 생성
+mythe82@k8s-controller-1:~$ sudo mkdir -p /mnt/k8s-nfs
+mythe82@k8s-controller-1:~$ sudo chmod -R 777 /mnt/k8s-nfs
+mythe82@k8s-controller-1:~$ sudo chown -R 1001.1001 /mnt/k8s-nfs
+
+# 공유할 디렉터리 경로와 현재 사용하고 있는 서버 인스턴스의 서브넷 범위를 지정
+mythe82@k8s-controller-1:~$ echo '/mnt/k8s-nfs 10.178.0.0/24(rw,sync,no_root_squash,no_subtree_check)' | sudo tee -a /etc/exports
+/mnt/k8s-nfs 10.178.0.0/24(rw,sync,no_root_squash,no_subtree_check)
+
+# 설정을 적용하고 서비스를 재시작
+mythe82@k8s-controller-1:~$ sudo exportfs -ra
+mythe82@k8s-controller-1:~$ sudo systemctl restart nfs-server
 
 # wk01 노드 실행
 mythe82@k8s-worker-1:~$ sudo apt-get install -y nfs-common
+mythe82@k8s-worker-1:~$ showmount -e 10.178.0.11
+Export list for 10.178.0.11:
+/mnt/k8s-nfs 10.178.0.0/24
 ```
 
 ## 2. install ansible
